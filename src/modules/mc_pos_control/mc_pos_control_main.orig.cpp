@@ -276,19 +276,7 @@ private:
 	math::Vector<3> _vel_sp_prev;
 	math::Vector<3> _vel_err_d;		/**< derivative of current velocity */
 
-	/// ssk
-	float _a0;
-	float _a1;
-	float _a2;
-	float _epsilon;
- 	math::Vector<3> _X1;
-	math::Vector<3> _X2;
- 	math::Vector<3> _Delta;
-	bool _isInitialized;
-
 	math::Matrix<3, 3> _R;			/**< rotation matrix from attitude quaternions */
-	float _roll;
-	float _pitch;
 	float _yaw;				/**< yaw angle (euler) */
 	bool _in_landing;	/**< the vehicle is in the landing descent */
 	bool _lnd_reached_ground; /**< controller assumes the vehicle has reached the ground after landing */
@@ -541,14 +529,6 @@ MulticopterPositionControl::MulticopterPositionControl() :
 
 	/* fetch initial parameter values */
 	parameters_update(true);
-
-	//// ssk
-	_X1.zero();
-	_X2.zero();
-	_Delta.zero();
-	_roll = 0.0;
-	_pitch = 0.0;
-	_isInitialized = false;
 }
 
 MulticopterPositionControl::~MulticopterPositionControl()
@@ -620,10 +600,8 @@ MulticopterPositionControl::parameters_update(bool force)
 		param_get(_params_handles.xy_vel_i, &v);
 		_params.vel_i(0) = v;
 		_params.vel_i(1) = v;
-		_a0 = v;  ///////////////////////////////
 		param_get(_params_handles.z_vel_i, &v);
 		_params.vel_i(2) = v;
-		_a1 = v;  ///////////////////////////////
 		param_get(_params_handles.xy_vel_d, &v);
 		_params.vel_d(0) = v;
 		_params.vel_d(1) = v;
@@ -644,12 +622,10 @@ MulticopterPositionControl::parameters_update(bool force)
 		param_get(_params_handles.z_vel_max_up, &v);
 		_params.vel_cruise(2) = v;
 		param_get(_params_handles.xy_ff, &v);
-		_a2 = v; /////////////////////////////////////
 		v = math::constrain(v, 0.0f, 1.0f);
 		_params.vel_ff(0) = v;
 		_params.vel_ff(1) = v;
 		param_get(_params_handles.z_ff, &v);
-		_epsilon = v;  //////////////////////////////
 		v = math::constrain(v, 0.0f, 1.0f);
 		_params.vel_ff(2) = v;
 		param_get(_params_handles.hold_xy_dz, &v);
@@ -742,8 +718,6 @@ MulticopterPositionControl::poll_subscriptions()
 		_R = q_att.to_dcm();
 		math::Vector<3> euler_angles;
 		euler_angles = _R.to_euler();
-		_roll = euler_angles(0);
-		_pitch = euler_angles(1);
 		_yaw = euler_angles(2);
 
 		if (_control_mode.flag_control_manual_enabled) {
@@ -1649,75 +1623,22 @@ MulticopterPositionControl::do_control(float dt)
 	_run_alt_control = true;
 
 	if (_control_mode.flag_control_manual_enabled) {
-
-		_X1.zero();
-		_X2.zero();
-		_Delta.zero();
-
 		/* manual control */
 		control_manual(dt);
 		_mode_auto = false;
 
 		_hold_offboard_xy = false;
 		_hold_offboard_z = false;
-		_isInitialized = false;
+
 	} else {
-		//// ssk
-		if(_isInitialized == false)
-		{
-			_isInitialized = true;
-			_X1(0) = _pos(0);
-			_X1(1) = _pos(1);
-			_X1(2) = _pos(2);
-			_X2.zero();
-			_Delta.zero();	
-			mavlink_log_info(&_mavlink_log_pub, "[pos_control] filter initialized");
-		}
 		control_non_manual(dt);
 	}
+
 }
 
 void
 MulticopterPositionControl::control_position(float dt)
 {
-	//// ssk 
-	math::Vector<3> ge3;
-	ge3.zero();
-	ge3(2) = 9.8f;
-	math::Vector<3> dX1, dX2, dDelta;
-	dX1 = _X2 + (_pos - _X1)*(_a0/_epsilon);
-//	math::Quaternion qd(_R_setpoint);
-	math::Matrix<3,3> R_sp;
-	R_sp(0,0) = _R_setpoint(0,0);
-	R_sp(0,1) = _R_setpoint(0,1);
-	R_sp(0,2) = _R_setpoint(0,2);
-	R_sp(1,0) = _R_setpoint(1,0);
-	R_sp(1,1) = _R_setpoint(1,1);
-	R_sp(1,2) = _R_setpoint(1,2);
-	R_sp(2,0) = _R_setpoint(2,0);
-	R_sp(2,1) = _R_setpoint(2,1);
-	R_sp(2,2) = _R_setpoint(2,2);
-
-	dX2 = ge3 - R_sp*ge3 + _Delta + (_pos - _X1)*(_a1/(_epsilon*_epsilon));
-	dDelta = (_pos - _X1)*(_a2/(_epsilon*_epsilon*_epsilon));
-	_Delta(2) = 0.0;
-//	mavlink_log_info(&_mavlink_log_pub, "[pos] _cs : %2.4f, %2.4f, %2.4f, %2.4f", 
-//		 (double)_a0, (double)_a1, (double)_a2, (double) _epsilon);
-		
-//	mavlink_log_info(&_mavlink_log_pub, "[pos_control] _pos : %2.4f, %2.4f, %2.4f", 
-//		 (double)_pos(0), (double)_pos(1), (double)_pos(2));
-//	mavlink_log_info(&_mavlink_log_pub, "[pos_control] X1 : %2.4f, %2.4f, %2.4f", 
-//		 (double)_X1(0), (double)_X1(1), (double)_X1(2));
-
-//	math::Vector<3> temp;
-//	temp = _R*ge3;
-//	mavlink_log_info(&_mavlink_log_pub, "[pos_control] R*ge3 : %2.4f, %2.4f, %2.4f", 
-//		 (double)temp(0), (double)temp(1), (double)temp(2));
-
-//	_X1 += dX1*dt;
-//	_X2 += dX2*dt;
-//	_Delta += dDelta*dt;
-
 	/* run position & altitude controllers, if enabled (otherwise use already computed velocity setpoints) */
 
 	if (_run_pos_control) {
@@ -1829,13 +1750,8 @@ MulticopterPositionControl::control_position(float dt)
 			thrust_sp = math::Vector<3>(_pos_sp_triplet.current.a_x, _pos_sp_triplet.current.a_y, _pos_sp_triplet.current.a_z);
 
 		} else {
-//// ssk
-//			thrust_sp = vel_err.emult(_params.vel_p) + _vel_err_d.emult(_params.vel_d)
-//				    + _thrust_int - math::Vector<3>(0.0f, 0.0f, _params.thr_hover);
 			thrust_sp = vel_err.emult(_params.vel_p) + _vel_err_d.emult(_params.vel_d)
-				    + _Delta*0.3 - math::Vector<3>(0.0f, 0.0f, _params.thr_hover);
-//			mavlink_log_info(&_mavlink_log_pub, "[pos_control] thrust_sp : %2.4f, %2.4f, %2.4f", 
-//		 		(double)thrust_sp(0), (double)thrust_sp(1), (double)thrust_sp(2));
+				    + _thrust_int - math::Vector<3>(0.0f, 0.0f, _params.thr_hover);
 		}
 
 		if (_pos_sp_triplet.current.type == position_setpoint_s::SETPOINT_TYPE_TAKEOFF
@@ -2062,14 +1978,14 @@ MulticopterPositionControl::control_position(float dt)
 		_att_sp.thrust = math::max(thrust_body_z, thr_min);
 
 		/* update integrals */
-//		if (_control_mode.flag_control_velocity_enabled && !saturation_xy) {
-//			_thrust_int(0) += vel_err(0) * _params.vel_i(0) * dt;
-//			_thrust_int(1) += vel_err(1) * _params.vel_i(1) * dt;
-//		}
-//
-//		if (_control_mode.flag_control_climb_rate_enabled && !saturation_z) {
-//			_thrust_int(2) += vel_err(2) * _params.vel_i(2) * dt;
-//		}
+		if (_control_mode.flag_control_velocity_enabled && !saturation_xy) {
+			_thrust_int(0) += vel_err(0) * _params.vel_i(0) * dt;
+			_thrust_int(1) += vel_err(1) * _params.vel_i(1) * dt;
+		}
+
+		if (_control_mode.flag_control_climb_rate_enabled && !saturation_z) {
+			_thrust_int(2) += vel_err(2) * _params.vel_i(2) * dt;
+		}
 
 		/* calculate attitude setpoint from thrust vector */
 		if (_control_mode.flag_control_velocity_enabled || _control_mode.flag_control_acceleration_enabled) {
@@ -2154,16 +2070,6 @@ MulticopterPositionControl::control_position(float dt)
 	} else {
 		_reset_int_z = true;
 	}
-	//// ssk
-	_X1 += dX1*dt;
-	_X2 += dX2*dt;
-	_Delta += dDelta*dt;
-	
-	for(int i=0;i<3;i++)
-		_Delta(i) = math::constrain(_Delta(i),-1.0f,1.0f);
-	
-//	mavlink_log_info(&_mavlink_log_pub, "[pos_control] Delta : %2.4f, %2.4f, %2.4f",
-//		 (double)_Delta(0), (double)_Delta(1), (double)_Delta(2));
 }
 
 void

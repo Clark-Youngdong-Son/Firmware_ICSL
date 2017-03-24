@@ -1962,7 +1962,7 @@ Mavlink::task_main(int argc, char *argv[])
 
 	/* PARAM_VALUE stream */
 	_parameters_manager = (MavlinkParametersManager *) MavlinkParametersManager::new_instance(this);
-	_parameters_manager->set_interval(interval_from_rate(300.0f));
+	_parameters_manager->set_interval(interval_from_rate(120.0f));
 	LL_APPEND(_streams, _parameters_manager);
 
 	/* MAVLINK_FTP stream */
@@ -2002,7 +2002,6 @@ Mavlink::task_main(int argc, char *argv[])
 		configure_stream("NAV_CONTROLLER_OUTPUT", 1.5f);
 		configure_stream("GLOBAL_POSITION_INT", 5.0f);
 		configure_stream("LOCAL_POSITION_NED", 1.0f);
-		configure_stream("POSITION_TARGET_LOCAL_NED", 1.5f);
 		configure_stream("POSITION_TARGET_GLOBAL_INT", 1.5f);
 		configure_stream("ATTITUDE_TARGET", 2.0f);
 		configure_stream("HOME_POSITION", 0.5f);
@@ -2067,6 +2066,7 @@ Mavlink::task_main(int argc, char *argv[])
 		break;
 
 	case MAVLINK_MODE_CONFIG:
+		////changed rates
 		// Enable a number of interesting streams we want via USB
 		configure_stream("SYS_STATUS", 1.0f);
 		configure_stream("EXTENDED_SYS_STATE", 2.0f);
@@ -2086,16 +2086,19 @@ Mavlink::task_main(int argc, char *argv[])
 		configure_stream("ESTIMATOR_STATUS", 5.0f);
 		configure_stream("NAV_CONTROLLER_OUTPUT", 10.0f);
 		configure_stream("GLOBAL_POSITION_INT", 10.0f);
-		configure_stream("LOCAL_POSITION_NED", 30.0f);
+		//configure_stream("LOCAL_POSITION_NED", 50.0f);
+		configure_stream("LOCAL_POSITION_NED", 200.0f);
 		configure_stream("POSITION_TARGET_GLOBAL_INT", 10.0f);
-		configure_stream("ATTITUDE_TARGET", 8.0f);
+		//configure_stream("ATTITUDE_TARGET", 50.0f);
+		configure_stream("ATTITUDE_TARGET", 200.0f);
 		configure_stream("HOME_POSITION", 0.5f);
 		configure_stream("NAMED_VALUE_FLOAT", 50.0f);
 		configure_stream("VFR_HUD", 20.0f);
 		configure_stream("WIND_COV", 10.0f);
 		configure_stream("CAMERA_TRIGGER", 500.0f);
 		configure_stream("MISSION_ITEM", 50.0f);
-		configure_stream("ACTUATOR_CONTROL_TARGET0", 30.0f);
+		//configure_stream("ACTUATOR_CONTROL_TARGET0", 50.0f);
+		configure_stream("ACTUATOR_CONTROL_TARGET0", 200.0f);
 		configure_stream("MANUAL_CONTROL", 5.0f);
 		break;
 
@@ -2225,15 +2228,13 @@ Mavlink::task_main(int argc, char *argv[])
 
 		/* check for shell output */
 		if (_mavlink_shell && _mavlink_shell->available() > 0) {
-			if (get_free_tx_buf() >= MAVLINK_MSG_ID_SERIAL_CONTROL_LEN + MAVLINK_NUM_NON_PAYLOAD_BYTES) {
-				mavlink_serial_control_t msg;
-				msg.baudrate = 0;
-				msg.flags = SERIAL_CONTROL_FLAG_REPLY;
-				msg.timeout = 0;
-				msg.device = SERIAL_CONTROL_DEV_SHELL;
-				msg.count = _mavlink_shell->read(msg.data, sizeof(msg.data));
-				mavlink_msg_serial_control_send_struct(get_channel(), &msg);
-			}
+			mavlink_serial_control_t msg;
+			msg.baudrate = 0;
+			msg.flags = SERIAL_CONTROL_FLAG_REPLY;
+			msg.timeout = 0;
+			msg.device = SERIAL_CONTROL_DEV_SHELL;
+			msg.count = _mavlink_shell->read(msg.data, sizeof(msg.data));
+			mavlink_msg_serial_control_send_struct(get_channel(), &msg);
 		}
 
 		/* check for ulog streaming messages */
