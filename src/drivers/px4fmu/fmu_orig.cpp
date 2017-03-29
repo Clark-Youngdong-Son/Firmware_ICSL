@@ -1281,11 +1281,10 @@ PX4FMU::cycle()
 				/* do mixing */
 				float outputs[_max_actuators];
 				num_outputs = _mixers->mix(outputs, num_outputs, NULL);
-				////outputs : Motor Thrust(N)
 
 				/* publish mixer status */
 				multirotor_motor_limits_s multirotor_motor_limits = {};
-				////multirotor_motor_limits.saturation_status = _mixers->get_saturation_status();
+				multirotor_motor_limits.saturation_status = _mixers->get_saturation_status();
 
 				if (_to_mixer_status == nullptr) {
 					/* publish limits */

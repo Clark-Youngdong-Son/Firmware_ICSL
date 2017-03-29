@@ -41,7 +41,7 @@ void BlockLocalPositionEstimator::landCorrect()
 	Vector<float, n_y_land> y;
 
 	if (landMeasure(y) != OK) { return; }
-	////
+	////no land detection
 	return;
 	// measurement matrix
 	Matrix<float, n_y_land, n_x> C;

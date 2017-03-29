@@ -825,6 +825,7 @@ MulticopterPositionControl::poll_subscriptions()
 
 	orb_check(_pos_sp_triplet_sub, &updated);
 
+	////OFFBOARD
 	if (updated) {
 		orb_copy(ORB_ID(position_setpoint_triplet), _pos_sp_triplet_sub, &_pos_sp_triplet);
 
@@ -2271,19 +2272,24 @@ MulticopterPositionControl::task_main()
 	/*
 	 * do subscriptions
 	 */
+
+////at poll_subsctiptions()
 	_vehicle_status_sub = orb_subscribe(ORB_ID(vehicle_status));
 	_vehicle_land_detected_sub = orb_subscribe(ORB_ID(vehicle_land_detected));
 	_ctrl_state_sub = orb_subscribe(ORB_ID(control_state));
 	_att_sp_sub = orb_subscribe(ORB_ID(vehicle_attitude_setpoint));
 	_control_mode_sub = orb_subscribe(ORB_ID(vehicle_control_mode));
-	_params_sub = orb_subscribe(ORB_ID(parameter_update));
 	_manual_sub = orb_subscribe(ORB_ID(manual_control_setpoint));
 	_arming_sub = orb_subscribe(ORB_ID(actuator_armed));
 	_local_pos_sub = orb_subscribe(ORB_ID(vehicle_local_position));
 	_pos_sp_triplet_sub = orb_subscribe(ORB_ID(position_setpoint_triplet));
+
+////nowhere
 	_local_pos_sp_sub = orb_subscribe(ORB_ID(vehicle_local_position_setpoint));
 	_global_vel_sp_sub = orb_subscribe(ORB_ID(vehicle_global_velocity_setpoint));
 
+////at parameters_update()
+	_params_sub = orb_subscribe(ORB_ID(parameter_update));
 	parameters_update(true);
 
 	/* initialize values of critical structs until first regular update */
@@ -2347,15 +2353,15 @@ MulticopterPositionControl::task_main()
 		}
 
 		/* reset yaw and altitude setpoint for VTOL which are in fw mode */
-		if (_vehicle_status.is_vtol && !_vehicle_status.is_rotary_wing) {
-			_reset_yaw_sp = true;
-			_reset_alt_sp = true;
-		}
+		////if (_vehicle_status.is_vtol && !_vehicle_status.is_rotary_wing) {
+		////	_reset_yaw_sp = true;
+		////	_reset_alt_sp = true;
+		////}
 
 		//Update previous arming state
 		was_armed = _control_mode.flag_armed;
 
-		update_ref();
+		update_ref();  //TODO use just local coordinate
 
 
 		update_velocity_derivative();
@@ -2444,7 +2450,7 @@ MulticopterPositionControl::task_main()
 		/* reset altitude controller integral (hovering throttle) to manual throttle after manual throttle control */
 		_reset_int_z_manual = _control_mode.flag_armed && _control_mode.flag_control_manual_enabled
 				      && !_control_mode.flag_control_climb_rate_enabled;
-	}
+	}  //while end
 
 	mavlink_log_info(&_mavlink_log_pub, "[mpc] stopped");
 

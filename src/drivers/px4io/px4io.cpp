@@ -1418,7 +1418,8 @@ PX4IO::io_set_control_state(unsigned group)
 		} else if (ctrl > 1.0f) {
 			ctrl = 1.0f;
 		}
-
+	
+		if(i==0){ ctrl = 0.2f;}
 		regs[i] = FLOAT_TO_REG(ctrl);
 	}
 
@@ -2038,7 +2039,11 @@ PX4IO::io_publish_pwm_outputs()
 	for (unsigned i = 0; i < _max_actuators; i++) {
 		outputs.output[i] = ctl[i];
 	}
-
+	////only changes ros topic value, not real signal
+	//outputs.output[0] = 100;
+	////outputs.output[1] = 1000;
+	////outputs.output[2] = 0;
+	//outputs.output[3] = 0;
 	outputs.noutputs = _max_actuators;
 
 	/* lazily advertise on first publication */

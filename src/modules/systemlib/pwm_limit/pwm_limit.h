@@ -57,6 +57,10 @@ __BEGIN_DECLS
  */
 #define RAMP_TIME_US 500000
 
+#define INTERPOLATE_2 0.00001359f
+#define INTERPOLATE_1 0.01536f
+#define INTERPOLATE_0 0.4755f
+
 enum pwm_limit_state {
 	PWM_LIMIT_STATE_OFF = 0,
 	PWM_LIMIT_STATE_INIT,
@@ -75,6 +79,7 @@ __EXPORT void pwm_limit_calc(const bool armed, const bool pre_armed, const unsig
 			     const uint16_t reverse_mask, const uint16_t *disarmed_pwm,
 			     const uint16_t *min_pwm, const uint16_t *max_pwm,
 			     const float *output, uint16_t *effective_pwm, pwm_limit_t *limit);
+__EXPORT float pwm_interpolate(const float thrust);
 
 __END_DECLS
 

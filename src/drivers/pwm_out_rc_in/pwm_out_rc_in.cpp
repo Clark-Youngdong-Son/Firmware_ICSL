@@ -55,15 +55,14 @@
 #include <v1.0/mavlink_types.h>
 #include <v1.0/common/mavlink.h>
 
-
 /*
  * This driver is supposed to run on Snapdragon. It sends actuator_controls (PWM)
  * to a Pixhawk/Pixfalcon/Pixracer over UART (mavlink) and receives RC input.
  */
 
+
 namespace pwm_out_rc_in
 {
-
 static const uint8_t mavlink_message_lengths[256] = MAVLINK_MESSAGE_LENGTHS;
 static const uint8_t mavlink_message_crcs[256] = MAVLINK_MESSAGE_CRCS;
 
@@ -410,6 +409,7 @@ void task_main(int argc, char *argv[])
 		}
 
 		if (fds[0].revents & POLLIN) {
+			////Moment_x(N.m), Moment_y(N.m), Moment_z(N.m), Thrust(N)
 			orb_copy(ORB_ID(actuator_controls_0), _controls_sub, &_controls);
 
 			_outputs.timestamp = _controls.timestamp;
@@ -440,7 +440,9 @@ void task_main(int argc, char *argv[])
 			// TODO FIXME: pre-armed seems broken
 			pwm_limit_calc(_armed.armed, false/*_armed.prearmed*/, _outputs.noutputs, reverse_mask,
 				       disarmed_pwm, min_pwm, max_pwm, _outputs.output, pwm, &_pwm_limit);
-
+			//mavlink_and_console_log_info(&mavlink_log_pub, "PWM : %4d, %4d, %4d, %4d",
+		    //(double)pwm[0], (double)pwm[1], (double)pwm[2], (double)pwm[3]);
+			PX4_WARN("PWM %d, %d %d %d", pwm[0], pwm[1], pwm[2], pwm[3]);
 
 			send_outputs_mavlink(pwm, 4);
 

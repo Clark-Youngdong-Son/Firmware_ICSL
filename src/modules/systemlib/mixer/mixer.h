@@ -135,6 +135,7 @@
 
 #include "mixer_load.h"
 
+
 /**
  * Abstract class defining a mixer mixing zero or more inputs to
  * one or more outputs.
@@ -608,6 +609,8 @@ public:
 	virtual uint16_t		get_saturation_status(void);
 	virtual void			groups_required(uint32_t &groups);
 
+
+
 	/**
 	 * @brief      Update slew rate parameter. This tells the multicopter mixer
 	 *             the maximum allowed change of the output values per cycle.
@@ -633,6 +636,13 @@ public:
 	virtual void			set_thrust_factor(float val) {_thrust_factor = val;}
 
 private:
+	////Mixer_ICSL
+	MultirotorGeometry _geometry;
+	float MappingMatrix_quad[4][4];
+	float MappingMatrix_hex[4][4];
+	void convertControl2Thrust_QUAD(float &roll, float &pitch, float &yaw, float &thrust, float *motorThrust);
+	float constraintThrust(const float thrust);
+
 	float				_roll_scale;
 	float				_pitch_scale;
 	float				_yaw_scale;
