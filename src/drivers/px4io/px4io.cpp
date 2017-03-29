@@ -1419,7 +1419,6 @@ PX4IO::io_set_control_state(unsigned group)
 			ctrl = 1.0f;
 		}
 	
-		if(i==0){ ctrl = 0.2f;}
 		regs[i] = FLOAT_TO_REG(ctrl);
 	}
 
