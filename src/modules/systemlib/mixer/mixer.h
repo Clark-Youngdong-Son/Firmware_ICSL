@@ -132,9 +132,8 @@
 #include "drivers/drv_mixer.h"
 
 #include <uORB/topics/multirotor_motor_limits.h>
-
+#include <systemlib/mavlink_log.h>
 #include "mixer_load.h"
-
 
 /**
  * Abstract class defining a mixer mixing zero or more inputs to
@@ -652,6 +651,7 @@ private:
 
 
 	orb_advert_t			_limits_pub;
+	orb_advert_t 			_mavlink_log_pub;
 	multirotor_motor_limits_s 	_limits;
 
 	union {

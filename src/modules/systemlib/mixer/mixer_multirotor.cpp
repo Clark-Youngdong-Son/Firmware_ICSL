@@ -97,6 +97,7 @@ MultirotorMixer::MultirotorMixer(ControlCallback control_cb,
 	_delta_out_max(0.0f),
 	_thrust_factor(0.0f),
 	_limits_pub(),
+	_mavlink_log_pub(nullptr),
 	_rotor_count(_config_rotor_count[(MultirotorGeometryUnderlyingType)geometry]),
 	_rotors(_config_index[(MultirotorGeometryUnderlyingType)geometry]),
 	_outputs_prev(new float[_rotor_count])
@@ -245,7 +246,14 @@ MultirotorMixer::mix(float *outputs, unsigned space, uint16_t *status_reg)
 	float		roll    = constrain(get_control(0, 0) * _roll_scale, -20.0f, 20.0f);
 	float		pitch   = constrain(get_control(0, 1) * _pitch_scale, -20.0f, 20.0f);
 	float		yaw     = constrain(get_control(0, 2) * _yaw_scale, -5.0f, 5.0f);
-	float		thrust  = constrain(get_control(0, 3), 0.0f, 70.0f);
+	float		thrust  = constrain(get_control(0, 3), -70.0f, 0.0f);
+
+//	mavlink_log_info(&_mavlink_log_pub, 
+//		"[mix] r %2.4f, p %2.4f, y %2.4f, F %2.4f",
+//		(double)get_control(0,0),
+//		(double)get_control(0,1),
+//		(double)get_control(0,2),
+//		(double)get_control(0,3));
 
 	if(_geometry == MultirotorGeometry::QUAD_X)
 	{
