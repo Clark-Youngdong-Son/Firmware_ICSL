@@ -1567,9 +1567,6 @@ void PositionControl::task_main()
 			}
 		}
 
-		mavlink_log_info(&_mavlink_log_pub,
-				"pwm_min : %d, pwm_max : %d",
-				_params.pwm_min, _params.pwm_max);
 	}
 
 	mavlink_log_info(&_mavlink_log_pub, "[mpc] stopped");
