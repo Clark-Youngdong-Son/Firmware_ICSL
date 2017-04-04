@@ -750,12 +750,12 @@ void AttitudeControl::task_main()
 				//_actuators.control[2] = 0;
 				//_actuators.control[3] = -10;
 				
-//				mavlink_log_info(&_mavlink_log_pub, 
-//						"[att] r %2.4f, p %2.4f, y %2.4f, F %2.4f",
-//						(double)_actuators.control[0],
-//						(double)_actuators.control[1],
-//						(double)_actuators.control[2],
-//						(double)_actuators.control[3]);
+				mavlink_log_info(&_mavlink_log_pub, 
+						"[att] r %2.4f, p %2.4f, y %2.4f, F %2.4f",
+						(double)_actuators.control[0],
+						(double)_actuators.control[1],
+						(double)_actuators.control[2],
+						(double)_actuators.control[3]);
 
 				_controller_status.roll_rate_integ = _rates_int(0);
 				_controller_status.pitch_rate_integ = _rates_int(1);
