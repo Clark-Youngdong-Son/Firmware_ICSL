@@ -744,6 +744,12 @@ void AttitudeControl::task_main()
 				_actuators.timestamp = hrt_absolute_time();
 				_actuators.timestamp_sample = _ctrl_state.timestamp;
 
+
+				//_actuators.control[0] = 3;
+				//_actuators.control[1] = 0;
+				//_actuators.control[2] = 0;
+				//_actuators.control[3] = -10;
+				
 //				mavlink_log_info(&_mavlink_log_pub, 
 //						"[att] r %2.4f, p %2.4f, y %2.4f, F %2.4f",
 //						(double)_actuators.control[0],

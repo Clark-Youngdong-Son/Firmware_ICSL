@@ -201,7 +201,7 @@ MultirotorMixer::from_text(Mixer::ControlCallback control_cb, uintptr_t cb_handl
 	}
 
 	debug("adding multirotor mixer '%s'", geomname);
-   	_geometry = geometry; 
+//   	_geometry = geometry; 
 	return new MultirotorMixer(
 		       control_cb,
 		       cb_handle,

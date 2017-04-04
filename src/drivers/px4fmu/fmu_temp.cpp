@@ -69,6 +69,7 @@
 #include <systemlib/systemlib.h>
 #include <systemlib/err.h>
 #include <systemlib/mixer/mixer.h>
+//#include <systemlib/mixer/mixer_multirotor.generated.h> //// hss
 #include <systemlib/pwm_limit/pwm_limit.h>
 #include <systemlib/board_serial.h>
 #include <systemlib/param/param.h>
@@ -217,7 +218,8 @@ private:
 	uint32_t	_pwm_mask;
 	bool		_pwm_initialized;
 
-	MixerGroup	*_mixers;
+	//MixerGroup	*_mixers;
+	MultirotorMixer	*_mixers; //// hss
 
 	uint32_t	_groups_required;
 	uint32_t	_groups_subscribed;
@@ -417,6 +419,27 @@ PX4FMU::PX4FMU(bool run_as_task) :
 
 	/* only enable this during development */
 	_debug_enabled = false;
+
+
+	//// hss
+//	MultirotorGeometry geometry;
+//	geometry = MultirotorGeometry::QUAD_X;
+//
+//	_mixers = new MultirotorMixer( control_callback,
+ //								(uintptr_t)_controls,
+//								geometry,
+//								0.0f,
+//								0.0f,
+//								0.0f,
+//								0.0f);
+	char buf[26];
+	sprintf(buf, "R: 4x 10000 10000 10000 0\n");
+	unsigned buflen = 26;
+	_mixers = MultirotorMixer::from_text( control_callback,
+							(uintptr_t)_controls,
+							buf,
+							buflen);
+						
 
 }
 
@@ -862,8 +885,8 @@ PX4FMU::update_pwm_trims()
 		}
 
 		/* copy the trim values to the mixer offsets */
-		unsigned n_out = _mixers->set_trims(values, _max_actuators);
-		PX4_DEBUG("set %d trims", n_out);
+//		unsigned n_out = _mixers->set_trims(values, _max_actuators); // hss
+//		PX4_DEBUG("set %d trims", n_out);
 	}
 }
 
@@ -2148,7 +2171,7 @@ PX4FMU::pwm_ioctl(file *filp, int cmd, unsigned long arg)
 			}
 
 			/* copy the trim values to the mixer offsets */
-			_mixers->set_trims((int16_t *)pwm->values, pwm->channel_count);
+	//		_mixers->set_trims((int16_t *)pwm->values, pwm->channel_count); /// hss
 			PX4_DEBUG("set_trims: %d, %d, %d, %d", pwm->values[0], pwm->values[1], pwm->values[2], pwm->values[3]);
 
 			break;
@@ -2477,12 +2500,12 @@ PX4FMU::pwm_ioctl(file *filp, int cmd, unsigned long arg)
 				ret = -EINVAL;
 
 			} else {
-				if (_mixers == nullptr)
-					_mixers = new MixerGroup(control_callback,
-								 (uintptr_t)_controls);
-
-				_mixers->add_mixer(mixer);
-				_mixers->groups_required(_groups_required);
+//				if (_mixers == nullptr)
+//					_mixers = new MixerGroup(control_callback, // hss
+//								 (uintptr_t)_controls);
+//
+//				_mixers->add_mixer(mixer);
+//				_mixers->groups_required(_groups_required);
 			}
 
 			break;
@@ -2490,10 +2513,10 @@ PX4FMU::pwm_ioctl(file *filp, int cmd, unsigned long arg)
 
 	case MIXERIOCLOADBUF: {
 			const char *buf = (const char *)arg;
-			unsigned buflen = strnlen(buf, 1024);
+//			unsigned buflen = strnlen(buf, 1024); // hss
 
 			if (_mixers == nullptr) {
-				_mixers = new MixerGroup(control_callback, (uintptr_t)_controls);
+//				_mixers = new MixerGroup(control_callback, (uintptr_t)_controls); // hss
 			}
 
 			if (_mixers == nullptr) {
@@ -2502,7 +2525,7 @@ PX4FMU::pwm_ioctl(file *filp, int cmd, unsigned long arg)
 
 			} else {
 
-				ret = _mixers->load_from_buf(buf, buflen);
+//				ret = _mixers->load_from_buf(buf, buflen); // hss
 
 				if (ret != 0) {
 					PX4_DEBUG("mixer load failed with %d", ret);

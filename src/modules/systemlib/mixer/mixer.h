@@ -129,9 +129,24 @@
 #define _SYSTEMLIB_MIXER_MIXER_H value
 
 #include <px4_config.h>
+//#include <px4_defines.h>
+//#include <px4_tasks.h>
+//#include <px4_posix.h>
+//#include <stdio.h>
+//#include <stdlib.h>
+//#include <string.h>
+//#include <unistd.h>
+//#include <errno.h>
+//#include <poll.h>
+
 #include "drivers/drv_mixer.h"
 
+//#include <uORB/uORB.h>
 #include <uORB/topics/multirotor_motor_limits.h>
+
+//#include <systemlib/param/param.h>
+//#include <systemlib/err.h>
+//#include <systemlib/systemlib.h>
 #include <systemlib/mavlink_log.h>
 #include "mixer_load.h"
 
