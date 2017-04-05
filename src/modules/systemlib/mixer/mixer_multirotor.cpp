@@ -254,7 +254,6 @@ MultirotorMixer::mix(float *outputs, unsigned space, uint16_t *status_reg)
 //		(double)get_control(0,1),
 //		(double)get_control(0,2),
 //		(double)get_control(0,3));
-//	printf("sss %2.4f\n", (double)get_control(0,0) );
 
 	if(_geometry == MultirotorGeometry::QUAD_X)
 	{

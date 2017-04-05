@@ -1323,7 +1323,8 @@ PX4FMU::cycle()
 					       _disarmed_pwm, _min_pwm, _max_pwm, outputs, pwm_limited, &_pwm_limit);
 
 
-				mavlink_log_info(&_mavlink_log_pub, 
+				//mavlink_log_info(&_mavlink_log_pub, 
+				PX4_INFO(
 					"[FMU] PWM1 %4d PWM2 %4d PWM3 %4d PWM4 %4d",
 					pwm_limited[0], 
 					pwm_limited[1], 

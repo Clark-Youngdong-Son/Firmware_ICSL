@@ -258,6 +258,10 @@ private:
 	math::Matrix<2,1> _qz;		// q-filter state
 	float _mass;				// quad mass [kg]
 	bool _filter_initialized; 	// filter initialization flag
+	float _max_force_N;			// maximum force
+	float _p1;					// polynomial parameter
+	float _p2;					// polynomial parameter
+	float _p3;					// polynomial parameter
 
 	int		parameters_update(bool force);
 	void		poll_subscriptions();
@@ -270,7 +274,6 @@ private:
 	void		control_offboard(float dt);
 	void		setpoint_generation(float dt);
 	void 		control_position(float dt); 
-	void 		control_position2(float dt); 
 
 	void		do_control(float dt);
 
@@ -281,6 +284,7 @@ private:
 
 	//// DOB functions
 	void 		reset_PQ_filter();
+	void 		control_position2(float dt); 
 
 };
 
@@ -402,6 +406,10 @@ PositionControl::PositionControl() :
 	_qz.zero();
 	_mass = 1.5;
 	_filter_initialized = false;
+	_max_force_N = 0.0;
+	_p1 = 1.359e-5;
+	_p2 = 0.01536;
+	_p3 = 0.4755;
 
 	_params_handles.thr_min		= param_find("MPC_THR_MIN");
 	_params_handles.thr_max		= param_find("MPC_THR_MAX");
@@ -1281,6 +1289,8 @@ void PositionControl::reset_PQ_filter()
 	float P2 = _params.vel_p(2)*( _vel_sp(2) - _vel(2) ); // kd*(zdot_d - zdot)
 	float tau0_z = _mass*( -9.81f + P1 + P2);
 	_pz(0,0) = (1.0f / sqrtf(_mass))*tau0_z;
+
+	mavlink_log_info(&_mavlink_log_pub, "PQ filter initialized");
 }
 
 void PositionControl::control_position2(float dt)
@@ -1321,9 +1331,6 @@ void PositionControl::control_position2(float dt)
 		// XXX I have to test another yaw compensation
 		// I'm confusing with this...
 
-		// desired euler angles
-		float roll_sp = tau2(1);
-		float pitch_sp = tau2(0)*(1.0f/cosf(roll_sp));
 		
 		math::Vector<2> chad;
 		chad(0) = cosf(_roll)*sinf(_pitch);
@@ -1345,12 +1352,11 @@ void PositionControl::control_position2(float dt)
 		math::Matrix<2,1> dqz = _A*_qz + _B*_pos(2);
 		
 		float W_z = math::constrain(_pz(0,0) + sqrtf(_mass)*( 9.81f - dqz(1,0) ),
-				-30.0f, 30.0f);
+									-30.0f, 30.0f);
 		
 		float tau1_z = (1.0f/sqrtf(_mass))*tau0_z + W_z;
-
+		//float tau1_z = (1.0f/sqrtf(_mass))*tau0_z;
 		float tau2_z = sqrtf(_mass)*tau1_z;
-		float thrust_sp = tau2_z;
 
 		math::Matrix<2,1> dpz = _A*_pz + _B*tau1_z;
 
@@ -1362,14 +1368,20 @@ void PositionControl::control_position2(float dt)
 		_py = _py + dpy*dt;
 		_pz = _pz + dpz*dt;
 
-		// 4. publication
+		// 4. attitude setpoint publication
+		float roll_sp = tau2(1);
+		float pitch_sp = tau2(0)*(1.0f/cosf(roll_sp));
 		matrix::Eulerf euler_sp(roll_sp, pitch_sp, _att_sp.yaw_body);
 		matrix::Quatf q_sp = euler_sp;
 		_R_setpoint = euler_sp;
-
 		memcpy(&_att_sp.q_d[0], q_sp.data(), sizeof(_att_sp.q_d));
 		_att_sp.roll_body = euler_sp(0);
 		_att_sp.pitch_body = euler_sp(1);
+	
+		// 5. special care for thrust
+		// since tau2_z is real thrust force, we have to convert it into 0~1 scaled value
+		// my choice is 0 -> 0N / 1 -> full thrust per motor X 4
+		float thrust_sp = (-1.0f*tau2_z)/(_max_force_N);
 		_att_sp.thrust = thrust_sp;
 		
 		_att_sp.timestamp = hrt_absolute_time();
@@ -1419,6 +1431,10 @@ void PositionControl::task_main()
 
 	fds[0].fd = _local_pos_sub;
 	fds[0].events = POLLIN;
+
+	// hss, computes maximum force
+	_max_force_N = (_p1*(_params.pwm_max-1200)*(_params.pwm_max-1200) + 
+				    _p2*(_params.pwm_max-1200) + _p3)*4.0f;
 
 	while (!_task_should_exit) 
 	{
@@ -1477,7 +1493,7 @@ void PositionControl::task_main()
 
 		// hss : reference is updated here ? 
 		// temporally don't do this
-//		update_ref();
+		update_ref();
 
 		// reset the horizontal and vertical position hold flags for non-manual modes
 		// or if position / altitude is not controlled
@@ -1543,19 +1559,6 @@ void PositionControl::task_main()
 			_control_mode.flag_control_velocity_enabled ||
 			_control_mode.flag_control_acceleration_enabled))) 
 		{
-			// hss : manual thrust is computed in "position control" and saved in "att_sp"
-//			mavlink_log_info(&_mavlink_log_pub, 
-//					"r %2.4f, p %2.4f, y %2.4f, F %2.4f",
-//					(double)_att_sp.roll_body,
-//					(double)_att_sp.pitch_body,
-//					(double)_att_sp.yaw_body,
-//					(double)_att_sp.thrust);
-//			mavlink_log_info(&_mavlink_log_pub, 
-//					"a0 %2.4f, a1 %2.4f, eps %2.4f",
-//					(double)_a0,
-//					(double)_a1,
-//					(double)_eps);
-
 			// hss : this is always published, IMPORTANT!!
 			if (_att_sp_pub != nullptr) 
 			{
@@ -1566,7 +1569,17 @@ void PositionControl::task_main()
 				_att_sp_pub = orb_advertise(_attitude_setpoint_id, &_att_sp);
 			}
 		}
+		
+//		mavlink_log_info(&_mavlink_log_pub, 
+//				"[pos] r %2.4f, p %2.4f, y %2.4f, F %2.4f",
+//				(double)_att_sp.roll_body,
+//				(double)_att_sp.pitch_body,
+//				(double)_att_sp.yaw_body,
+//				(double)_att_sp.thrust);
 
+//		mavlink_log_info(&_mavlink_log_pub,
+//				"[pos] max force : %2.4f",
+//				(double)_max_force_N);
 	}
 
 	mavlink_log_info(&_mavlink_log_pub, "[mpc] stopped");
