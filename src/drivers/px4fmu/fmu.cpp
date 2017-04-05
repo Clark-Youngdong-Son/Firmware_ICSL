@@ -37,6 +37,7 @@
  * Driver/configurator for the PX4 FMU multi-purpose port on v1 and v2 boards.
  */
 
+
 #include <px4_config.h>
 #include <px4_log.h>
 
@@ -862,8 +863,8 @@ PX4FMU::update_pwm_trims()
 		}
 
 		/* copy the trim values to the mixer offsets */
-		unsigned n_out = _mixers->set_trims(values, _max_actuators);
-		PX4_DEBUG("set %d trims", n_out);
+////		unsigned n_out = _mixers->set_trims(values, _max_actuators);
+////		PX4_DEBUG("set %d trims", n_out);
 	}
 }
 
@@ -1274,25 +1275,26 @@ PX4FMU::cycle()
 				if (_mot_t_max > FLT_EPSILON) {
 					// maximum value the ouputs of the multirotor mixer are allowed to change in this cycle
 					// factor 2 is needed because actuator ouputs are in the range [-1,1]
-					float delta_out_max = 2.0f * 1000.0f * dt / (_max_pwm[0] - _min_pwm[0]) / _mot_t_max;
-					_mixers->set_max_delta_out_once(delta_out_max);
+				////	float delta_out_max = 2.0f * 1000.0f * dt / (_max_pwm[0] - _min_pwm[0]) / _mot_t_max;
+				////	_mixers->set_max_delta_out_once(delta_out_max);
 				}
 
 				if (_thr_mdl_fac > FLT_EPSILON) {
-					_mixers->set_thrust_factor(_thr_mdl_fac);
+				////	_mixers->set_thrust_factor(_thr_mdl_fac);
 				}
 
 				/* do mixing */
 				float outputs[_max_actuators];
 				num_outputs = _mixers->mix(outputs, num_outputs, NULL);
+				//num_outputs = _mixers->mix_ICSL(outputs, _controls, NULL);
 				////outputs : Motor Thrust(N)
 
-				mavlink_log_info(&_mavlink_log_pub, 
-					"[FMU] F1 %2.4f F2 %2.4f F3 %2.4f F4 %2.4f",
-					(double)outputs[0], 
-					(double)outputs[1], 
-					(double)outputs[2], 
-					(double)outputs[3]);
+			//	mavlink_log_info(&_mavlink_log_pub, 
+			//		"[FMU] F1 %2.4f F2 %2.4f F3 %2.4f F4 %2.4f",
+			//		(double)outputs[0], 
+			//		(double)outputs[1], 
+			//		(double)outputs[2], 
+			//		(double)outputs[3]);
  
 				/* publish mixer status */
 				multirotor_motor_limits_s multirotor_motor_limits = {};
@@ -1322,13 +1324,13 @@ PX4FMU::cycle()
 				pwm_limit_calc(_throttle_armed, arm_nothrottle(), num_outputs, _reverse_pwm_mask,
 					       _disarmed_pwm, _min_pwm, _max_pwm, outputs, pwm_limited, &_pwm_limit);
 
-
-				mavlink_log_info(&_mavlink_log_pub, 
-					"[FMU] PWM1 %4d PWM2 %4d PWM3 %4d PWM4 %4d",
-					pwm_limited[0], 
-					pwm_limited[1], 
-					pwm_limited[2], 
-					pwm_limited[3]);
+			//	PX4_INFO("[FMU] PWM: %4d %4d %4d %4d", pwm_limited[0], pwm_limited[1], pwm_limited[2], pwm_limited[3]);
+			//	mavlink_log_info(&_mavlink_log_pub, 
+			//		"[FMU] PWM1 %4d PWM2 %4d PWM3 %4d PWM4 %4d",
+			//		pwm_limited[0], 
+			//		pwm_limited[1], 
+			//		pwm_limited[2], 
+			//		pwm_limited[3]);
 
 				/* overwrite outputs in case of force_failsafe with _failsafe_pwm PWM values */
 				if (_armed.force_failsafe) {
@@ -1804,24 +1806,24 @@ PX4FMU::control_callback(uintptr_t handle,
 	input = controls[control_group].control[control_index];
 
 	/* limit control input */
-	if (input > 1.0f) {
-		input = 1.0f;
-
-	} else if (input < -1.0f) {
-		input = -1.0f;
-	}
+//	if (input > 1.0f) {
+//		input = 1.0f;
+//
+//	} else if (input < -1.0f) {
+//		input = -1.0f;
+//	}
 
 	/* motor spinup phase - lock throttle to zero */
-	if (_pwm_limit.state == PWM_LIMIT_STATE_RAMP) {
-		if ((control_group == actuator_controls_s::GROUP_INDEX_ATTITUDE ||
-		     control_group == actuator_controls_s::GROUP_INDEX_ATTITUDE_ALTERNATE) &&
-		    control_index == actuator_controls_s::INDEX_THROTTLE) {
-			/* limit the throttle output to zero during motor spinup,
-			 * as the motors cannot follow any demand yet
-			 */
-			input = 0.0f;
-		}
-	}
+//	if (_pwm_limit.state == PWM_LIMIT_STATE_RAMP) {
+//		if ((control_group == actuator_controls_s::GROUP_INDEX_ATTITUDE ||
+//		     control_group == actuator_controls_s::GROUP_INDEX_ATTITUDE_ALTERNATE) &&
+//		    control_index == actuator_controls_s::INDEX_THROTTLE) {
+//			/* limit the throttle output to zero during motor spinup,
+//			 * as the motors cannot follow any demand yet
+//			 */
+//			input = 0.0f;
+//		}
+//	}
 
 	/* throttle not arming - mark throttle input as invalid */
 	if (arm_nothrottle() && !_armed.in_esc_calibration_mode) {
@@ -2148,7 +2150,7 @@ PX4FMU::pwm_ioctl(file *filp, int cmd, unsigned long arg)
 			}
 
 			/* copy the trim values to the mixer offsets */
-			_mixers->set_trims((int16_t *)pwm->values, pwm->channel_count);
+////			_mixers->set_trims((int16_t *)pwm->values, pwm->channel_count);
 			PX4_DEBUG("set_trims: %d, %d, %d, %d", pwm->values[0], pwm->values[1], pwm->values[2], pwm->values[3]);
 
 			break;

@@ -129,24 +129,24 @@
 #define _SYSTEMLIB_MIXER_MIXER_H value
 
 #include <px4_config.h>
-//#include <px4_defines.h>
-//#include <px4_tasks.h>
-//#include <px4_posix.h>
-//#include <stdio.h>
-//#include <stdlib.h>
-//#include <string.h>
-//#include <unistd.h>
-//#include <errno.h>
-//#include <poll.h>
+#include <px4_defines.h>
+#include <px4_tasks.h>
+#include <px4_posix.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <errno.h>
+#include <poll.h>
 
 #include "drivers/drv_mixer.h"
 
-//#include <uORB/uORB.h>
 #include <uORB/topics/multirotor_motor_limits.h>
+#include <uORB/topics/actuator_controls.h>
 
 //#include <systemlib/param/param.h>
 //#include <systemlib/err.h>
-//#include <systemlib/systemlib.h>
+#include <systemlib/systemlib.h>
 #include <systemlib/mavlink_log.h>
 #include "mixer_load.h"
 
@@ -190,6 +190,7 @@ public:
 	 * @return			The number of entries in the output array that were populated.
 	 */
 	virtual unsigned		mix(float *outputs, unsigned space, uint16_t *status_reg) = 0;
+	virtual unsigned   		mix_ICSL(float *outputs, float *controls, uint16_t *status_reg) = 0;
 
 	/**
 	 * Get the saturation status.
@@ -300,6 +301,7 @@ public:
 	~MixerGroup();
 
 	virtual unsigned		mix(float *outputs, unsigned space, uint16_t *status_reg);
+	virtual unsigned   		mix_ICSL(float *outputs, float *controls, uint16_t *status_reg);
 	virtual uint16_t		get_saturation_status(void);
 	virtual void			groups_required(uint32_t &groups);
 
@@ -441,6 +443,7 @@ public:
 	static NullMixer		*from_text(const char *buf, unsigned &buflen);
 
 	virtual unsigned		mix(float *outputs, unsigned space, uint16_t *status_reg);
+	virtual unsigned   		mix_ICSL(float *outputs, float *controls, uint16_t *status_reg);
 	virtual uint16_t		get_saturation_status(void);
 	virtual void			groups_required(uint32_t &groups);
 	virtual void 			set_offset(float trim) {};
@@ -513,6 +516,7 @@ public:
 			uint16_t max);
 
 	virtual unsigned		mix(float *outputs, unsigned space, uint16_t *status_reg);
+	virtual unsigned   		mix_ICSL(float *outputs, float *controls, uint16_t *status_reg);
 	virtual uint16_t		get_saturation_status(void);
 	virtual void			groups_required(uint32_t &groups);
 
@@ -620,6 +624,7 @@ public:
 			unsigned &buflen);
 
 	virtual unsigned		mix(float *outputs, unsigned space, uint16_t *status_reg);
+	virtual unsigned   		mix_ICSL(float *outputs, float *controls, uint16_t *status_reg);
 	virtual uint16_t		get_saturation_status(void);
 	virtual void			groups_required(uint32_t &groups);
 
@@ -760,6 +765,7 @@ public:
 			unsigned &buflen);
 
 	virtual unsigned		mix(float *outputs, unsigned space, uint16_t *status_reg);
+	virtual unsigned   		mix_ICSL(float *outputs, float *controls, uint16_t *status_reg);
 	virtual void			groups_required(uint32_t &groups);
 
 	virtual uint16_t		get_saturation_status(void) { return 0; }
