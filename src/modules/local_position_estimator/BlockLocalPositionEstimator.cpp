@@ -459,10 +459,10 @@ void BlockLocalPositionEstimator::update()
 
 	if (baroUpdated) {
 		if (_sensorTimeout & SENSOR_BARO) {
-			baroInit();
+////			baroInit();
 
 		} else {
-			baroCorrect();
+////			baroCorrect();
 		}
 	}
 
@@ -513,10 +513,10 @@ void BlockLocalPositionEstimator::update()
 
 	if (landUpdated) {
 		if (_sensorTimeout & SENSOR_LAND) {
-			landInit();
+////			landInit();
 
 		} else {
-			landCorrect();
+////			landCorrect();
 		}
 	}
 

@@ -1199,6 +1199,9 @@ void PositionControl::generate_attitude_setpoint(float dt)
 		{
 			_att_sp.thrust = math::max(_att_sp.thrust, _manual_thr_min.get());
 		}
+
+		//// for safety in manual mode..
+		_att_sp.thrust *= 0.5f;
 	}
 
 	/* control roll and pitch directly if no aiding velocity controller is active */
@@ -1381,7 +1384,7 @@ void PositionControl::control_position2(float dt)
 		// 5. special care for thrust
 		// since tau2_z is real thrust force, we have to convert it into 0~1 scaled value
 		// my choice is 0 -> 0N / 1 -> full thrust per motor X 4
-		float thrust_sp = (-1.0f*tau2_z)/(_max_force_N);
+		float thrust_sp = -tau2_z/(100.0f);
 		_att_sp.thrust = thrust_sp;
 		
 		_att_sp.timestamp = hrt_absolute_time();

@@ -243,11 +243,15 @@ MultirotorMixer::from_text(Mixer::ControlCallback control_cb, uintptr_t cb_handl
 unsigned
 MultirotorMixer::mix(float *outputs, unsigned space, uint16_t *status_reg)
 {
-	float		roll    = constrain(get_control(0, 0) * _roll_scale, -20.0f, 20.0f);
-	float		pitch   = constrain(get_control(0, 1) * _pitch_scale, -20.0f, 20.0f);
-	float		yaw     = constrain(get_control(0, 2) * _yaw_scale, -5.0f, 5.0f);
-	float		thrust  = constrain(get_control(0, 3), -70.0f, 0.0f);
+//	float		roll    = constrain(get_control(0, 0) * _roll_scale, -20.0f, 20.0f);
+//	float		pitch   = constrain(get_control(0, 1) * _pitch_scale, -20.0f, 20.0f);
+//	float		yaw     = constrain(get_control(0, 2) * _yaw_scale, -5.0f, 5.0f);
+//	float		thrust  = constrain(get_control(0, 3), -70.0f, 0.0f);
 
+	float		roll    = get_control(0, 0);
+	float		pitch   = get_control(0, 1);
+	float		yaw     = get_control(0, 2);
+	float		thrust  = constrain(get_control(0, 3), 0.0f, 1.0f);
 //	mavlink_log_info(&_mavlink_log_pub, 
 //		"[mix] r %2.4f, p %2.4f, y %2.4f, F %2.4f",
 //		(double)get_control(0,0),
@@ -271,7 +275,7 @@ MultirotorMixer::mix(float *outputs, unsigned space, uint16_t *status_reg)
 
 void MultirotorMixer::convertControl2Thrust_QUAD(float &roll, float &pitch, float &yaw, float &thrust, float *motorThrust)
 {
-	float input[4] = {-thrust, roll, pitch, yaw};
+	float input[4] = {thrust*100.0f, roll, pitch, yaw};
 
 	for (int i=0; i<4; i++)
 	{

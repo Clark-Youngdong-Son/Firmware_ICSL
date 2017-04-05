@@ -97,7 +97,7 @@ set(config_module_list
 	modules/mavlink
 	modules/gpio_led
 	#modules/uavcan
-	modules/land_detector
+	#modules/land_detector
 
 	#
 	# Estimation modules
@@ -110,11 +110,11 @@ set(config_module_list
 	#
 	# Vehicle Control
 	#
-	modules/fw_pos_control_l1
-	modules/fw_att_control
+#	modules/fw_pos_control_l1
+#	modules/fw_att_control
 #	modules/mc_att_control
 #	modules/mc_pos_control
-	modules/vtol_att_control
+#	modules/vtol_att_control
 	modules/attitude_control
 	modules/position_control
 
