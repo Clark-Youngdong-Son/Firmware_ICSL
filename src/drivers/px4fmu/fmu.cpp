@@ -1324,6 +1324,7 @@ PX4FMU::cycle()
 				pwm_limit_calc(_throttle_armed, arm_nothrottle(), num_outputs, _reverse_pwm_mask,
 					       _disarmed_pwm, _min_pwm, _max_pwm, outputs, pwm_limited, &_pwm_limit);
 
+<<<<<<< HEAD
 			//	PX4_INFO("[FMU] PWM: %4d %4d %4d %4d", pwm_limited[0], pwm_limited[1], pwm_limited[2], pwm_limited[3]);
 			//	mavlink_log_info(&_mavlink_log_pub, 
 			//		"[FMU] PWM1 %4d PWM2 %4d PWM3 %4d PWM4 %4d",
@@ -1331,6 +1332,16 @@ PX4FMU::cycle()
 			//		pwm_limited[1], 
 			//		pwm_limited[2], 
 			//		pwm_limited[3]);
+=======
+
+				//mavlink_log_info(&_mavlink_log_pub, 
+				PX4_INFO(
+					"[FMU] PWM1 %4d PWM2 %4d PWM3 %4d PWM4 %4d",
+					pwm_limited[0], 
+					pwm_limited[1], 
+					pwm_limited[2], 
+					pwm_limited[3]);
+>>>>>>> 8e18e13c1a13418fa2b25e36e8bfb97a9c559e1e
 
 				/* overwrite outputs in case of force_failsafe with _failsafe_pwm PWM values */
 				if (_armed.force_failsafe) {
