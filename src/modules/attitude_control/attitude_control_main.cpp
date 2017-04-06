@@ -740,8 +740,8 @@ void AttitudeControl::task_main()
 			vehicle_motor_limits_poll();
 			battery_status_poll();
 
-			if( _armed )
-			{
+//			if( _armed.armed )
+//			{
 				// hss : control loop is only executed when vehicle is armed
 
 				if (_v_control_mode.flag_control_rates_enabled) 
@@ -792,7 +792,7 @@ void AttitudeControl::task_main()
 						_controller_status_pub = orb_advertise(ORB_ID(mc_att_ctrl_status), &_controller_status);
 					}
 				}
-			}
+//			}
 		}
 		perf_end(_loop_perf);
 	} 

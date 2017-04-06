@@ -1296,7 +1296,7 @@ PX4FMU::cycle()
  
 				/* publish mixer status */
 				multirotor_motor_limits_s multirotor_motor_limits = {};
-				////multirotor_motor_limits.saturation_status = _mixers->get_saturation_status();
+				multirotor_motor_limits.saturation_status = _mixers->get_saturation_status();
 
 				if (_to_mixer_status == nullptr) {
 					/* publish limits */
@@ -1952,26 +1952,35 @@ PX4FMU::pwm_ioctl(file *filp, int cmd, unsigned long arg)
 				break;
 			}
 
-			for (unsigned i = 0; i < pwm->channel_count; i++) {
-				if (pwm->values[i] == 0) {
-					/* ignore 0 */
-				} else if (pwm->values[i] > PWM_HIGHEST_MAX) {
-					_failsafe_pwm[i] = PWM_HIGHEST_MAX;
-
+			for (unsigned i = 0; i < pwm->channel_count; i++) 
+			{
+				// hss : do NOT allocate high PWM values when failsafe mode
+				if(pwm->values[i] == 0)
+				{
 				}
-
-#if PWM_LOWEST_MIN > 0
-
-				else if (pwm->values[i] < PWM_LOWEST_MIN) {
-					_failsafe_pwm[i] = PWM_LOWEST_MIN;
-
+				else
+				{
+					_failsafe_pwm[i] = 900;
 				}
-
-#endif
-
-				else {
-					_failsafe_pwm[i] = pwm->values[i];
-				}
+//				if (pwm->values[i] == 0) {
+//					/* ignore 0 */
+//				} else if (pwm->values[i] > PWM_HIGHEST_MAX) {
+//					_failsafe_pwm[i] = PWM_HIGHEST_MAX;
+//
+//				}
+//
+//#if PWM_LOWEST_MIN > 0
+//
+//				else if (pwm->values[i] < PWM_LOWEST_MIN) {
+//					_failsafe_pwm[i] = PWM_LOWEST_MIN;
+//
+//				}
+//
+//#endif
+//
+//				else {
+//					_failsafe_pwm[i] = pwm->values[i];
+//				}
 			}
 
 			/*
@@ -2009,24 +2018,33 @@ PX4FMU::pwm_ioctl(file *filp, int cmd, unsigned long arg)
 				break;
 			}
 
-			for (unsigned i = 0; i < pwm->channel_count; i++) {
-				if (pwm->values[i] == 0) {
-					/* ignore 0 */
-				} else if (pwm->values[i] > PWM_HIGHEST_MAX) {
-					_disarmed_pwm[i] = PWM_HIGHEST_MAX;
+			for (unsigned i = 0; i < pwm->channel_count; i++) 
+			{
+				// hss : do NOT allocate high PWM value when disarmed mode
+				if(pwm->values[i] == 0)
+				{
 				}
-
-#if PWM_LOWEST_MIN > 0
-
-				else if (pwm->values[i] < PWM_LOWEST_MIN) {
-					_disarmed_pwm[i] = PWM_LOWEST_MIN;
+				else
+				{
+					_disarmed_pwm[i] = 900;
 				}
-
-#endif
-
-				else {
-					_disarmed_pwm[i] = pwm->values[i];
-				}
+//				if (pwm->values[i] == 0) {
+//					/* ignore 0 */
+//				} else if (pwm->values[i] > PWM_HIGHEST_MAX) {
+//					_disarmed_pwm[i] = PWM_HIGHEST_MAX;
+//				}
+//
+//#if PWM_LOWEST_MIN > 0
+//
+//				else if (pwm->values[i] < PWM_LOWEST_MIN) {
+//					_disarmed_pwm[i] = PWM_LOWEST_MIN;
+//				}
+//
+//#endif
+//
+//				else {
+//					_disarmed_pwm[i] = pwm->values[i];
+//				}
 			}
 
 			/*

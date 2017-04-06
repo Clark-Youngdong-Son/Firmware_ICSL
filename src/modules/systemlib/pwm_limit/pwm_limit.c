@@ -187,11 +187,6 @@ void pwm_limit_calc(const bool armed, const bool pre_armed, const unsigned num_c
 	////			}
 	////		}
 
-////////Not changed
-////////effective_pwm[0] = 1400;
-////////effective_pwm[1] = 1000;
-////////effective_pwm[2] = 1000;
-////////effective_pwm[3] = 1000;
 	////	}
 	////	break;
 
@@ -242,17 +237,14 @@ void pwm_limit_calc(const bool armed, const bool pre_armed, const unsigned num_c
      				effective_pwm[i] = max_pwm[i];
      			}
 			}
-////PWM_CHANGE
-////double experiment = round(effective_pwm[0]*1.1f/100.0f);
-////effective_pwm[0] = (uint16_t)(experiment*100);
-////effective_pwm[0] = 1400;
-////effective_pwm[1] = 1000;
-////effective_pwm[2] = 1000;
-////effective_pwm[3] = 1000;
-
 		break;
 
 	default:
+		// hss : default value is disarmed PWM
+		for (unsigned i = 0; i < num_channels; i++) {
+			effective_pwm[i] = disarmed_pwm[i];
+		}
+
 		break;
 	}
 
