@@ -740,57 +740,58 @@ void AttitudeControl::task_main()
 			vehicle_motor_limits_poll();
 			battery_status_poll();
 
-			if (_v_control_mode.flag_control_rates_enabled) 
+			if( _armed )
 			{
-				control(dt);
+				// hss : control loop is only executed when vehicle is armed
 
-				/* publish actuator controls */
-				_actuators.control[0] = (PX4_ISFINITE(_att_control(0))) ? _att_control(0) : 0.0f;
-				_actuators.control[1] = (PX4_ISFINITE(_att_control(1))) ? _att_control(1) : 0.0f;
-				_actuators.control[2] = (PX4_ISFINITE(_att_control(2))) ? _att_control(2) : 0.0f;
-				_actuators.control[3] = (PX4_ISFINITE(_thrust_sp)) ? _thrust_sp : 0.0f;
-				_actuators.control[7] = _v_att_sp.landing_gear;
-				_actuators.timestamp = hrt_absolute_time();
-				_actuators.timestamp_sample = _ctrl_state.timestamp;
-				
-//				mavlink_log_info(&_mavlink_log_pub, 
-//						"[att] r %2.4f, p %2.4f, y %2.4f, F %2.4f",
-//						(double)_actuators.control[0],
-//						(double)_actuators.control[1],
-//						(double)_actuators.control[2],
-//						(double)_actuators.control[3]);
-
-				_controller_status.roll_rate_integ = _rates_int(0);
-				_controller_status.pitch_rate_integ = _rates_int(1);
-				_controller_status.yaw_rate_integ = _rates_int(2);
-				_controller_status.timestamp = hrt_absolute_time();
-
-				if (!_actuators_0_circuit_breaker_enabled) 
+				if (_v_control_mode.flag_control_rates_enabled) 
 				{
-					if (_actuators_0_pub != nullptr) 
+					control(dt);
+
+					/* publish actuator controls */
+					_actuators.control[0]=(PX4_ISFINITE(_att_control(0))) ? _att_control(0) : 0.0f;
+					_actuators.control[1]=(PX4_ISFINITE(_att_control(1))) ? _att_control(1) : 0.0f;
+					_actuators.control[2]=(PX4_ISFINITE(_att_control(2))) ? _att_control(2) : 0.0f;
+					_actuators.control[3]=(PX4_ISFINITE(_thrust_sp)) ? _thrust_sp : 0.0f;
+					_actuators.control[7]=_v_att_sp.landing_gear;
+					_actuators.timestamp = hrt_absolute_time();
+					_actuators.timestamp_sample = _ctrl_state.timestamp;
+				
+//					mavlink_log_info(&_mavlink_log_pub, 
+//							"[att] r %2.4f, p %2.4f, y %2.4f, F %2.4f",
+//							(double)_actuators.control[0],
+//							(double)_actuators.control[1],
+//							(double)_actuators.control[2],
+//							(double)_actuators.control[3]);
+
+					_controller_status.roll_rate_integ = _rates_int(0);
+					_controller_status.pitch_rate_integ = _rates_int(1);
+					_controller_status.yaw_rate_integ = _rates_int(2);
+					_controller_status.timestamp = hrt_absolute_time();
+
+					if (!_actuators_0_circuit_breaker_enabled) 
 					{
-						orb_publish(_actuators_id, _actuators_0_pub, &_actuators);
-						perf_end(_controller_latency_perf);
+						if (_actuators_0_pub != nullptr) 
+						{
+							orb_publish(_actuators_id, _actuators_0_pub, &_actuators);
+							perf_end(_controller_latency_perf);
+						} 
+						else if (_actuators_id) 
+						{
+							_actuators_0_pub = orb_advertise(_actuators_id, &_actuators);
+						}
+					}
+	
+					/* publish controller status */
+					if (_controller_status_pub != nullptr) 
+					{
+						orb_publish(ORB_ID(mc_att_ctrl_status), _controller_status_pub, &_controller_status);
 					} 
-					else if (_actuators_id) 
+					else 
 					{
-						_actuators_0_pub = orb_advertise(_actuators_id, &_actuators);
+						_controller_status_pub = orb_advertise(ORB_ID(mc_att_ctrl_status), &_controller_status);
 					}
 				}
-
-				/* publish controller status */
-				if (_controller_status_pub != nullptr) 
-				{
-					orb_publish(ORB_ID(mc_att_ctrl_status), _controller_status_pub, &_controller_status);
-				} 
-				else 
-				{
-					_controller_status_pub = orb_advertise(ORB_ID(mc_att_ctrl_status), &_controller_status);
-				}
-//				//// Therefore, the role of "mc_att_control" is publishing 
-//				//// - _actuators ( _actutators_0_pub )
-//				//// 	rotational components in torque and thrust in normalized unit?
-//				//// - _controller_status ( _controller_status_pub )
 			}
 		}
 		perf_end(_loop_perf);
