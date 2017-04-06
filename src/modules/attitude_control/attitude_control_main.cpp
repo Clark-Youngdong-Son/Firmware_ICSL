@@ -608,6 +608,12 @@ void AttitudeControl::control(float dt)
 	for (int i=0; i<2; i++)
 		rpy_sp(i) = math::constrain(rpy_sp(i),math::radians(-20.0f),math::radians(20.0f));
 
+//	mavlink_log_info(&_mavlink_log_pub, 
+//		"[sp] roll %2.4f, pitch %2.4f, yaw %2.4f",
+//		(double)math::degrees(rpy_sp(0)),
+//		(double)math::degrees(rpy_sp(1)),
+//		(double)math::degrees(rpy_sp(2)));
+	
 	/* get current rotation matrix from control state quaternions */
 	math::Quaternion q_att(_ctrl_state.q[0], _ctrl_state.q[1], _ctrl_state.q[2], _ctrl_state.q[3]);
 	math::Vector<3> rpy = q_att.to_euler();
@@ -646,6 +652,9 @@ void AttitudeControl::control(float dt)
 
 	/* OUTPUT : att_control vector including torque */
 	_att_control = (tau1 + U)/(_cmd2torque*_Lambda*_G);
+	_att_control(0) *= 0.1f;
+	_att_control(1) *= 0.1f;
+	_att_control(2) *= 0.1f;
 
 	/* P, Q filter update */
 	math::Vector<6> dp = _A*_p + _B*tau2;

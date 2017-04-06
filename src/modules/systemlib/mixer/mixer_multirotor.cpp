@@ -275,7 +275,7 @@ MultirotorMixer::mix(float *outputs, unsigned space, uint16_t *status_reg)
 
 void MultirotorMixer::convertControl2Thrust_QUAD(float &roll, float &pitch, float &yaw, float &thrust, float *motorThrust)
 {
-	float input[4] = {thrust*100.0f, roll, pitch, yaw};
+	float input[4] = {thrust*100.0f, roll*10.0f, pitch*10.0f, yaw*10.0f};
 
 	for (int i=0; i<4; i++)
 	{

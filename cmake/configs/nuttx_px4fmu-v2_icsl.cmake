@@ -97,7 +97,7 @@ set(config_module_list
 	modules/mavlink
 	modules/gpio_led
 	#modules/uavcan
-	#modules/land_detector
+	modules/land_detector
 
 	#
 	# Estimation modules
