@@ -2892,7 +2892,7 @@ PX4IO::ioctl(file *filep, int cmd, unsigned long arg)
 
 				} else {
 					////Not working
-					////*(servo_position_t *)arg = value;
+					*(servo_position_t *)arg = value;
 					////*(servo_position_t *)arg = value;
 				}
 			}
