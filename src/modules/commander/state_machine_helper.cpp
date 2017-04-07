@@ -998,7 +998,8 @@ bool set_nav_state(struct vehicle_status_s *status,
 					status->nav_state = vehicle_status_s::NAVIGATION_STATE_ALTCTL;
 
 				} else if (offb_loss_rc_act == 2) {
-					status->nav_state = vehicle_status_s::NAVIGATION_STATE_MANUAL;
+					////status->nav_state = vehicle_status_s::NAVIGATION_STATE_MANUAL;
+					status->nav_state = vehicle_status_s::NAVIGATION_STATE_TERMINATION;
 
 				} else if (offb_loss_rc_act == 4 && status_flags->condition_global_position_valid) {
 					status->nav_state = vehicle_status_s::NAVIGATION_STATE_AUTO_LAND;

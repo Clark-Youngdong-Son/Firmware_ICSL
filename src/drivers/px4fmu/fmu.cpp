@@ -1285,14 +1285,6 @@ PX4FMU::cycle()
 				/* do mixing */
 				float outputs[_max_actuators];
 				num_outputs = _mixers->mix(outputs, num_outputs, NULL);
-				////outputs : Motor Thrust(N)
-
-				mavlink_log_info(&_mavlink_log_pub, 
-					"[FMU] F1 %2.4f F2 %2.4f F3 %2.4f F4 %2.4f",
-					(double)outputs[0], 
-					(double)outputs[1], 
-					(double)outputs[2], 
-					(double)outputs[3]);
  
 				/* publish mixer status */
 				multirotor_motor_limits_s multirotor_motor_limits = {};
@@ -1322,15 +1314,6 @@ PX4FMU::cycle()
 				pwm_limit_calc(_throttle_armed, arm_nothrottle(), num_outputs, _reverse_pwm_mask,
 					       _disarmed_pwm, _min_pwm, _max_pwm, outputs, pwm_limited, &_pwm_limit);
 
-
-				//mavlink_log_info(&_mavlink_log_pub, 
-				PX4_INFO(
-					"[FMU] PWM1 %4d PWM2 %4d PWM3 %4d PWM4 %4d",
-					pwm_limited[0], 
-					pwm_limited[1], 
-					pwm_limited[2], 
-					pwm_limited[3]);
-
 				/* overwrite outputs in case of force_failsafe with _failsafe_pwm PWM values */
 				if (_armed.force_failsafe) {
 					for (size_t i = 0; i < num_outputs; i++) {
@@ -1344,6 +1327,14 @@ PX4FMU::cycle()
 						pwm_limited[i] = _disarmed_pwm[i];
 					}
 				}
+
+
+				////Not working
+				////for (size_t i=0;i<num_outputs;i++)
+				////{
+				////	pwm_limited[i] = 1000;
+				////}
+				////
 
 				/* output to the servos */
 				for (size_t i = 0; i < num_outputs; i++) {
@@ -2576,6 +2567,8 @@ PX4FMU::write(file *filp, const char *buffer, size_t len)
 	for (uint8_t i = 0; i < count; i++) {
 		if (values[i] != PWM_IGNORE_THIS_CHANNEL) {
 			up_pwm_servo_set(i, values[i]);
+			////Not working
+			////up_pwm_servo_set(i, (uint16_t)(1000));
 		}
 	}
 

@@ -2861,7 +2861,10 @@ PX4IO::ioctl(file *filep, int cmd, unsigned long arg)
 			} else {
 				if (!_test_fmu_fail) {
 					/* send a direct PWM value */
+					////Not working
+					////uint32_t value = 1000;
 					ret = io_reg_set(PX4IO_PAGE_DIRECT_PWM, channel, arg);
+					////ret = io_reg_set(PX4IO_PAGE_DIRECT_PWM, channel, value);
 
 				} else {
 					/* Just silently accept the ioctl without doing anything
@@ -2888,7 +2891,9 @@ PX4IO::ioctl(file *filep, int cmd, unsigned long arg)
 					ret = -EIO;
 
 				} else {
-					*(servo_position_t *)arg = value;
+					////Not working
+					////*(servo_position_t *)arg = value;
+					////*(servo_position_t *)arg = value;
 				}
 			}
 
@@ -3172,8 +3177,15 @@ PX4IO::write(file * /*filp*/, const char *buffer, size_t len)
 		int ret = OK;
 
 		/* The write() is silently ignored in test mode. */
+		////Not working
 		if (!_test_fmu_fail) {
+		//	servo_position_t servos[_max_actuators];
+
+		//	for (unsigned i = 0; i < _max_actuators; i++) {
+		//		servos[i] = 1000;
+		//	}
 			ret = io_reg_set(PX4IO_PAGE_DIRECT_PWM, 0, (uint16_t *)buffer, count);
+			////ret = io_reg_set(PX4IO_PAGE_DIRECT_PWM, 0, servos, _max_actuators);
 		}
 
 		perf_end(_perf_write);

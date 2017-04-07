@@ -247,7 +247,6 @@ void pwm_limit_calc(const bool armed, const bool pre_armed, const unsigned num_c
 
 		break;
 	}
-
 }
 
 float pwm_interpolate(const float thrust)

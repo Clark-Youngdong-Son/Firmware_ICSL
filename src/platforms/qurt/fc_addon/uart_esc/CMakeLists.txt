@@ -55,7 +55,7 @@ px4_add_module(
         COMPILE_FLAGS
                 -Weffc++
         SRCS
-                uart_esc_main.cpp
+#                uart_esc_main.cpp
 		uart_esc_params.c
 
         DEPENDS

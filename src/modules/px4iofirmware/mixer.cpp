@@ -264,10 +264,11 @@ mixer_tick(void)
 
 		/* copy failsafe values to the servo outputs */
 		for (unsigned i = 0; i < PX4IO_SERVO_COUNT; i++) {
-			r_page_servos[i] = r_page_servo_failsafe[i];
+			r_page_servos[i] = 1000;
 
 			/* safe actuators for FMU feedback */
-			r_page_actuators[i] = FLOAT_TO_REG((r_page_servos[i] - 1500) / 600.0f);
+			////r_page_actuators[i] = FLOAT_TO_REG((r_page_servos[i] - 1500) / 600.0f);
+			r_page_actuators[i] = FLOAT_TO_REG((r_page_servos[i]));
 		}
 
 
@@ -300,6 +301,9 @@ mixer_tick(void)
 		pwm_limit_calc(should_arm, should_arm_nothrottle, mixed, r_setup_pwm_reverse, r_page_servo_disarmed,
 			       r_page_servo_control_min, r_page_servo_control_max, outputs, r_page_servos, &pwm_limit);
 
+		////for (unsigned i = 0; i < PX4IO_SERVO_COUNT; i++) {
+		////r_page_servos[i] = 1000;
+		////}
 		/* clamp unused outputs to zero */
 		for (unsigned i = mixed; i < PX4IO_SERVO_COUNT; i++) {
 			r_page_servos[i] = 0;
@@ -606,7 +610,8 @@ mixer_set_failsafe()
 	for (unsigned i = 0; i < mixed; i++) {
 
 		/* scale to servo output */
-		r_page_servo_failsafe[i] = (outputs[i] * 600.0f) + 1500;
+		//r_page_servo_failsafe[i] = (outputs[i] * 600.0f) + 1500;
+		r_page_servo_failsafe[i] = 1000;
 
 	}
 
